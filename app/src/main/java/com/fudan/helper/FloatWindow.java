@@ -8,8 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-
-import com.fudan.callingu.MainActivity;
+import com.fudan.callingu.MainActivityC;
 import com.fudan.callingu.R;
 
 import java.lang.reflect.Field;
@@ -37,7 +36,7 @@ public class FloatWindow extends LinearLayout {
     public FloatWindow(Context context) {
         super(context);
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        LayoutInflater.from(context).inflate(R.layout.float_window_simple, this);
+        LayoutInflater.from(context).inflate(R.layout.float_window, this);
         View view = findViewById(R.id.simple_window_layout);
         viewWidth = view.getLayoutParams().width;
         viewHeight = view.getLayoutParams().height;
@@ -65,7 +64,7 @@ public class FloatWindow extends LinearLayout {
                 // 如果手指离开屏幕时，xDownInScreen和xInScreen相等，且yDownInScreen和yInScreen相等，则视为触发了单击事件。
                 if (xDownInScreen == xInScreen && yDownInScreen == yInScreen) {
                     //打开程序
-                    Intent intent = new Intent(getContext(),MainActivity.class);
+                    Intent intent = new Intent(getContext(),MainActivityC.class);
                     getContext().startActivity(intent);
                 }
                 break;

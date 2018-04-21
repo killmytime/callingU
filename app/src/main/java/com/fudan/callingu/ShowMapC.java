@@ -63,7 +63,7 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
     private SharedPreferences pref;
     private SharedPreferences pref0,pref2;
     private SharedPreferences.Editor editor;
-    String mynum;
+    String myNumber;
     int sos;
 
     TencentLocationManager locationManager;
@@ -167,10 +167,10 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
         };
 
         Intent intent=getIntent();
-        sos=intent.getIntExtra("sos",0);
+        sos=intent.getIntExtra("sos",-1);
 
         pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-        mynum=pref.getString("num","0");
+        myNumber=pref.getString("number","0");
 
 
         setContentView(R.layout.show_map_c);
@@ -205,7 +205,7 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
     }
 
     private void cancelSOS(){
-        HttpConnector.sendLocation(-1,mynum,mynum,sos, 0, 0, ShowMapC.this);
+        HttpConnector.sendLocation(myNumber, 0, 0, sos,-1,ShowMapC.this);
         reportMyStateChanged(-1);
 
         pref0= getSharedPreferences("callingStatus",MODE_MULTI_PROCESS);
@@ -233,7 +233,7 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
                 .setNegativeButton("取消", null)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        HttpConnector.setMessage(mynum, inputServer.getText().toString()+'\n',
+                        HttpConnector.setMessage(myNumber, inputServer.getText().toString()+'\n',
                                 new HttpListener() {
                                     @Override
                                     public void onHttpFinish(int state, String responseData) {
@@ -279,7 +279,7 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
     }
 
     private void reportMyStateChanged(final int myState){
-        HttpConnector.reportMyStateChanged(mynum,mynum,myState,myState, new HttpListener() {
+        HttpConnector.reportMyStateChanged(myNumber,myNumber,myState,myState, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
@@ -476,7 +476,7 @@ public class ShowMapC extends BaseActivity implements TencentLocationListener,Ht
             for(SaveObject mSaveObjct : mHospitalList){
                 markObject(mSaveObjct.latitude, mSaveObjct.longitude,mSaveObjct.title,mHospitalMarker,false);
             }
-            HttpConnector.sendLocation(0,mynum,mynum,sos, location.getLatitude(), location.getLongitude(),ShowMapC.this);
+            HttpConnector.sendLocation(myNumber,location.getLatitude(), location.getLongitude(),sos,0,ShowMapC.this);
         } else {
             // 定位失败
         }

@@ -30,6 +30,8 @@ import com.bumptech.glide.Glide;
 import com.fudan.helper.ActivityCollector;
 import com.fudan.helper.BaseActivity;
 import com.fudan.helper.CallingService;
+import com.fudan.helper.DataCheck;
+import com.fudan.helper.FloatWindowService;
 import com.fudan.helper.HttpConnector;
 import com.fudan.helper.HttpListener;
 import com.fudan.helper.PermissionUtils;
@@ -46,15 +48,16 @@ import static com.bumptech.glide.request.RequestOptions.bitmapTransform;
  * Created by FanJin on 2017/1/19.
  */
 
-public class MainActivity extends BaseActivity implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener, HttpListener {
-    private static final String TAG = "MainActivity";
+public class MainActivityC extends BaseActivity implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener, HttpListener {
+    private static final String TAG = "MainActivityC";
     private Button apply_syncope,apply_trauma,apply_pregnant,apply_paediatrics ;
+    private Button switchBC;
     private Intent intent;
     private DrawerLayout mDrawerLayout;
-    private SharedPreferences pref;
+    private SharedPreferences pref,myPreference;
     private SharedPreferences pref0,pref2;
     private SharedPreferences.Editor editor;
-    public static String mynum;
+    public static String myNumber;
     private AlertDialog.Builder warningDialog;
     private SharedPreferences resource;
 
@@ -92,7 +95,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
     @Override
     public void onHttpFinish(int state, String responseData){
         if (state == -1){
-            Toast.makeText(MainActivity.this,getResources().getString(R.string.network_exception),Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivityC.this,getResources().getString(R.string.network_exception),Toast.LENGTH_SHORT).show();
         } else {
             //
         }
@@ -113,14 +116,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
         NavigationView navView=(NavigationView) findViewById(R.id.nav_view);
 
         navView.setNavigationItemSelectedListener(this);
-        warningDialog = new AlertDialog.Builder(MainActivity.this);
+        warningDialog = new AlertDialog.Builder(MainActivityC.this);
 
-        SharedPreferences pref =getSharedPreferences("loginStatus",MODE_PRIVATE);
-        String name = pref.getString("name","");
-        String phone = pref.getString("num","");
+        pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
+        myNumber=pref.getString("number","0");
+
+        myPreference=getSharedPreferences("myPreference",MODE_PRIVATE);
+        Boolean isFloat=myPreference.getBoolean("floatChoice",false);
+        if (isFloat){
+            Intent serviceStart = new Intent(MainActivityC.this, FloatWindowService.class);
+            startService(serviceStart);
+        }
+
         View headView = navView.getHeaderView(0);
         TextView user = headView.findViewById(R.id.user_center_name);
-        user.setText(name+"\n"+phone);
+        user.setText(myNumber);
 
         Button aMenu=(Button) findViewById(R.id.a_menu);
         aMenu.setOnClickListener(this);
@@ -131,7 +141,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
         apply_trauma=(Button) findViewById(R.id.apply_trauma);
         apply_syncope.setOnClickListener(this);
         //apply_trauma.setOnClickListener(this);
-
+        switchBC=(Button)findViewById(R.id.switch_c);
+        switchBC.setClickable(false);
+        if (DataCheck.isBuser(myNumber)){
+            switchBC.setClickable(true);
+            switchBC.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent=new Intent(MainActivityC.this,MainActivityB.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+        }
         requestPermission();
 
         /**
@@ -156,18 +178,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
         Log.d(TAG, "onCreate: ----"+lastdata);
         Log.d(TAG, "onCreate: ----"+nowdate);
         if (nowdate-lastdata >24*60*60*1000) {
-            //if ((pic != null) && (nowdate-lastdata <1000)){ // just for debugging
             HttpConnector.checkNew(1, new HttpListener() {
                 @Override
                 public void onHttpFinish(int state, String responseData) {
                     if (state == -1) {
-                        Toast.makeText(MainActivity.this, "无法连接到服务器，请检查网络状态", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivityC.this, "无法连接到服务器，请检查网络状态", Toast.LENGTH_SHORT).show();
                     } else {
                         SharedPreferences.Editor editor = resource.edit();
                         editor.putLong("lastdate", nowdate);
                         editor.apply();
                         if (responseData.equals("new")) {
-                            new AlertDialog.Builder(MainActivity.this)
+                            new AlertDialog.Builder(MainActivityC.this)
                                     .setTitle("发现新版本")
                                     .setMessage("请升级APP！")
                                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -177,7 +198,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
                                                 @Override
                                                 public void onHttpFinish(int state, String responseData) {
                                                     if (state == -1) {
-                                                        Toast.makeText(MainActivity.this, "无法连接到服务器，请检查网络状态", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(MainActivityC.this, "无法连接到服务器，请检查网络状态", Toast.LENGTH_SHORT).show();
                                                     } else {
                                                         //
                                                     }
@@ -202,16 +223,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
      * @param sos : type of calling
      */
     private void saveCalling(final int sos){
-        HttpConnector.checkWrong(mynum, new HttpListener() {
+        HttpConnector.checkWrong(myNumber, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
-                    Toast.makeText(MainActivity.this,getResources().getString(R.string.network_exception),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivityC.this,getResources().getString(R.string.network_exception),Toast.LENGTH_SHORT).show();
                 } else {
                     if (responseData.equals("201")){
                         setWarning();
                     }else {
-                        new AlertDialog.Builder(MainActivity.this)
+                        new AlertDialog.Builder(MainActivityC.this)
                                 .setMessage("呼救后，此求救信息将传播给附近的志愿者，是否确定呼救？")
                                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                     @Override
@@ -222,7 +243,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
                                         editor.putInt("sos",sos);
                                         editor.apply();
 
-                                        Intent intentCallingService = new Intent(MainActivity.this, CallingService.class);
+                                        Intent intentCallingService = new Intent(MainActivityC.this, CallingService.class);
                                         startService(intentCallingService);
                                     }
                                 })
@@ -254,27 +275,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
     public boolean onNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.user_center_preference:
-                Intent intentMyPreference=new Intent(MainActivity.this,MyPreference.class);
+                Intent intentMyPreference=new Intent(MainActivityC.this,MyPreference.class);
                 startActivity(intentMyPreference);
                 break;
             case R.id.user_center_permission:
-                Intent intentMyPermission=new Intent(MainActivity.this,MyPermission.class);
+                Intent intentMyPermission=new Intent(MainActivityC.this,MyPermission.class);
                 startActivity(intentMyPermission);
                 break;
-            case R.id.user_center_band:
-                Intent intentMyBand=new Intent(MainActivity.this,MyBand.class);
-                startActivity(intentMyBand);
-                break;
+//            case R.id.user_center_band:
+//                Intent intentMyBand=new Intent(MainActivityC.this,MyBand.class);
+//                startActivity(intentMyBand);
+//                break;
             case R.id.user_center_help:
-                Intent intentMyHelp=new Intent(MainActivity.this,MyHelp.class);
+                Intent intentMyHelp=new Intent(MainActivityC.this,MyHelp.class);
                 startActivity(intentMyHelp);
                 break;
             case R.id.user_center_about:
-                Intent intentMyAbout=new Intent(MainActivity.this,MyAbout.class);
+                Intent intentMyAbout=new Intent(MainActivityC.this,MyAbout.class);
                 startActivity(intentMyAbout);
                 break;
             case R.id.user_center_logout:
-                new AlertDialog.Builder(MainActivity.this)
+                new AlertDialog.Builder(MainActivityC.this)
                         .setTitle("退出登录")
                         .setMessage("确定要退出吗？")
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -318,7 +339,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
             case R.id.a_help:
-                Intent intent4=new Intent(MainActivity.this,MyHelp.class);
+                Intent intent4=new Intent(MainActivityC.this,MyHelp.class);
                 startActivity(intent4);
                 break;
         }
@@ -353,30 +374,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
             editor=pref2.edit();
             editor.putBoolean("map",true);
             editor.apply();
-            intent=new Intent(MainActivity.this,ShowMapC.class);
+            intent=new Intent(MainActivityC.this,ShowMapC.class);
             int sos=pref0.getInt("sos",-1);
             intent.putExtra("sos",sos);
             startActivity(intent);
         }
 
         // upload my state, in case that being calling after returning from another activity.
-        pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-        mynum=pref.getString("num","0");
-        HttpConnector.sendLocation(-1,mynum,mynum,0, 0, 0,MainActivity.this);
+
+        HttpConnector.sendLocation(myNumber,0, 0,1, -1,MainActivityC.this);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                HttpConnector.sendLocation(-1,mynum,mynum,0, 0, 0,MainActivity.this);
+                HttpConnector.sendLocation(myNumber,0,0,1,-1,MainActivityC.this);
             }
         },3000);
 
-        HttpConnector.checkWrong(mynum, new HttpListener() {
+        HttpConnector.checkWrong(myNumber, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1) {
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.network_exception), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivityC.this, getResources().getString(R.string.network_exception), Toast.LENGTH_SHORT).show();
                 } else {
                     if (responseData.equals("201")) {
                         setWarning();
@@ -396,29 +416,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,N
 
     private void requestPermission(){
         List<String> permissionList=new ArrayList<>();
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(MainActivityC.this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE)
+        if (ContextCompat.checkSelfPermission(MainActivityC.this, Manifest.permission.READ_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.READ_PHONE_STATE);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(MainActivityC.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS)
+        if (ContextCompat.checkSelfPermission(MainActivityC.this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.SEND_SMS);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
+        if (ContextCompat.checkSelfPermission(MainActivityC.this, Manifest.permission.CALL_PHONE)
                 != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.CALL_PHONE);
         }
         if (!permissionList.isEmpty()){
             String [] permissions=permissionList.toArray(new String[permissionList.size()]);
-            ActivityCompat.requestPermissions(MainActivity.this,permissions,1);
+            ActivityCompat.requestPermissions(MainActivityC.this,permissions,1);
         }
     }
 

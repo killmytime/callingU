@@ -59,12 +59,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/location_result"
-            android:text="- 暂无事件 -"
+            android:text="- 暂无求救信息 -"
             android:textSize="18sp"
             android:layout_marginTop="30dp"
             android:layout_centerHorizontal="true"
             android:gravity="center"
             android:visibility="visible"/>
+        <Button
+            android:id="@+id/switch_b"
+            android:clickable="false"
+            android:layout_width="62dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/doctor_marker" />
     </RelativeLayout>
 
 </RelativeLayout>

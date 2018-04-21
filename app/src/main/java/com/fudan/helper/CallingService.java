@@ -25,7 +25,7 @@ import com.tencent.map.geolocation.TencentLocationRequest;
 public class CallingService extends Service {
     private static final String TAG = "CallingService";
     int sos;
-    String mynum;
+    String myNumber;
     private SharedPreferences pref0,pref;
     //long[] vibrateTime= new long[20];
 
@@ -49,13 +49,15 @@ public class CallingService extends Service {
                 sos=pref0.getInt("sos",-1);
 
                 pref = getSharedPreferences("loginStatus",MODE_PRIVATE);
-                mynum = pref.getString("num","0");
+                myNumber = pref.getString("number","0");
+                //呼救声音资源
                 Uri sound=Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.notificationsound );
 
                 Intent intent = new Intent(CallingService.this,ShowMapC.class);
                 intent.putExtra("sos",sos);
                 startActivity(intent);
                 PendingIntent pi = PendingIntent.getActivity(CallingService.this,0, intent ,0);
+                //Notification window
                 Notification notification = new NotificationCompat.Builder(CallingService.this)
                         .setContentTitle("一键呼救")
                         .setContentText("您发送了求救信息")
@@ -77,7 +79,7 @@ public class CallingService extends Service {
                 error = locationManager.requestLocationUpdates(request, new TencentLocationListener() {
                     @Override
                     public void onLocationChanged(TencentLocation location, int i, String s) {
-                        HttpConnector.sendLocation(0, mynum, mynum, sos, location.getLatitude(), location.getLongitude(),
+                        HttpConnector.sendLocation( myNumber, location.getLatitude(), location.getLongitude(),sos,0,
                                 new HttpListener() {
                                     @Override
                                     public void onHttpFinish(int state, String responseData) {

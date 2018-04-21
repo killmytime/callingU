@@ -23,8 +23,8 @@ import org.json.JSONObject;
 public class MyCredit extends BaseActivity {
     private static final String TAG = "MyCredit";
     private Button back;
-    private String myNum;
-    private TextView totalScore,totalSuccess,totalJoin,totalAction;
+    private String myNumber;
+    private TextView Score,Success,Join,Action;
     private TextView certification;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +43,15 @@ public class MyCredit extends BaseActivity {
                 finish();
             }
         });
-        totalScore = findViewById(R.id.score_tv) ;
-        totalJoin = findViewById(R.id.join_tv) ;
-        totalAction = findViewById(R.id.action_tv) ;
-        totalSuccess = findViewById(R.id.success_tv) ;
+        Score = findViewById(R.id.score_tv) ;
+        Join = findViewById(R.id.join_tv) ;
+        Action = findViewById(R.id.action_tv) ;
+        Success = findViewById(R.id.success_tv) ;
         certification = findViewById(R.id.certification_tv) ;
 
         SharedPreferences pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-        myNum=pref.getString("num","0");
-        HttpConnector.getScore(myNum, new HttpListener() {
+        myNumber=pref.getString("number","0");
+        HttpConnector.getScore(myNumber, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
@@ -60,7 +60,7 @@ public class MyCredit extends BaseActivity {
                     if (! responseData.equals("401")){
                         parseJSON(responseData);
                     }
-
+                    Toast.makeText(MyCredit.this,"用户未授权",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -75,10 +75,10 @@ public class MyCredit extends BaseActivity {
             Log.e(TAG, "parseJSON: "+jsonData);
             for (int i=0; i<jsonArray.length();i++){
                 JSONObject jsonObject=jsonArray.getJSONObject(i);
-                totalScore.setText(jsonObject.getInt("total_score")+" 分");
-                totalJoin.setText(jsonObject.getInt("total_join")+" 次");
-                totalAction.setText(jsonObject.getInt("total_action")+" 次");
-                totalSuccess.setText(jsonObject.getInt("total_success")+" 次");
+                Score.setText(jsonObject.getInt("score")+" 分");
+                Join.setText(jsonObject.getInt("join")+" 次");
+                Action.setText(jsonObject.getInt("action")+" 次");
+                Success.setText(jsonObject.getInt("success")+" 次");
                 certification.setText(jsonObject.getString("certification"));
             }
         } catch (Exception e){

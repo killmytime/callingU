@@ -1,11 +1,17 @@
 package com.fudan.callingu;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -23,6 +29,7 @@ import android.widget.TextView;
 
 import com.fudan.helper.BaseActivity;
 import com.fudan.helper.FloatWindowService;
+import com.fudan.helper.MobileInfoUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,9 +159,26 @@ public class MyPreference extends BaseActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b){
+                    if (ContextCompat.checkSelfPermission(MyPreference.this, Manifest.permission.SYSTEM_ALERT_WINDOW)!= PackageManager.PERMISSION_GRANTED){
+                        new AlertDialog.Builder(MyPreference.this)
+                                .setMessage("悬浮窗权限未打开")
+                                .setPositiveButton("去打开", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent();
+                                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                        intent.setData(uri);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .create()
+                                .show();
+
+                    }
                     Intent serviceStart = new Intent(MyPreference.this, FloatWindowService.class);
                     startService(serviceStart);
-                    editor.putBoolean("floatChoice",true);
+                    editor.putBoolean("floatChoice", true);
                     editor.apply();
                     //打开悬浮窗
                    // finish();

@@ -141,7 +141,7 @@ public class ReadContacts extends BaseActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     readContacts();
                 } else {
-                    Toast.makeText(this, "You denied the permission", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "未获取联系人权限", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:

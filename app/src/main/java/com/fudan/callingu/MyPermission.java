@@ -20,7 +20,7 @@ import com.fudan.helper.MobileInfoUtils;
 
 public class MyPermission extends BaseActivity {
 
-    private Button btn1,btn2,back;
+    private Button back;
     String [] permission_list = {"设置手机权限","设置自启动管理"};
 
     @Override

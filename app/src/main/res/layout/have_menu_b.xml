@@ -18,14 +18,14 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
     </FrameLayout>
 
-    <include layout="@layout/main_content"/>
+    <include layout="@layout/apply_sos"/>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/usercenter_menu"
+        app:menu="@menu/usercenter_menu_b"
         app:headerLayout="@layout/usercenter_header"/>
 
 </android.support.v4.widget.DrawerLayout>

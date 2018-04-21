@@ -7,13 +7,17 @@
             android:icon="@drawable/ic_settings_black_36dp"
             android:title="偏好设置"/>
         <item
+            android:id="@+id/user_center_wallet"
+            android:icon="@drawable/ic_credit"
+            android:title="我的荣誉"/>
+        <item
             android:id="@+id/user_center_permission"
             android:icon="@drawable/ic_credit"
             android:title="手机权限"/>
         <!--<item-->
-            <!--android:id="@+id/user_center_band"-->
-            <!--android:icon="@drawable/ic_bluetooth_white_36dp"-->
-            <!--android:title="我的手环"/>-->
+        <!--android:id="@+id/user_center_band"-->
+        <!--android:icon="@drawable/ic_bluetooth_white_36dp"-->
+        <!--android:title="我的手环"/>-->
         <item
             android:id="@+id/user_center_help"
             android:icon="@drawable/ic_help"

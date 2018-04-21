@@ -31,7 +31,7 @@ public class NotifyService extends Service implements TencentLocationListener,Ht
     private static final String TAG = "NotifyService";
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
-    String mynum;
+    String myNumber;
     int flag=0;
     TencentLocationManager locationManager;
     TencentLocationRequest request;
@@ -55,7 +55,7 @@ public class NotifyService extends Service implements TencentLocationListener,Ht
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-        mynum=pref.getString("num","0");
+        myNumber=pref.getString("number","0");
 
         request = TencentLocationRequest.create()
                 .setInterval(10*1000)
@@ -92,7 +92,7 @@ public class NotifyService extends Service implements TencentLocationListener,Ht
     public void onLocationChanged(TencentLocation location, int error, String reason) {
         if (TencentLocation.ERROR_OK == error) {
             // 定位成功
-            HttpConnector.downInformation(0,1,mynum,"0",0, location.getLatitude(), location.getLongitude(),NotifyService.this);
+            HttpConnector.downInformation(myNumber, location.getLatitude(), location.getLongitude(),"0",-1,NotifyService.this);
         } else {
             // 定位失败
         }
@@ -132,7 +132,7 @@ public class NotifyService extends Service implements TencentLocationListener,Ht
             Log.e(TAG, "parseJSON: "+jsonData);
             for (int i=0; i<jsonArray.length();i++){
                 JSONObject jsonObject=jsonArray.getJSONObject(i);
-                num=jsonObject.getString("num");
+                num=jsonObject.getString("number");
                 new_set.add(num);
                 setEditor.putString("element"+(i+1),num);
                 Log.e("parse","-------------"+i+"-----------over");

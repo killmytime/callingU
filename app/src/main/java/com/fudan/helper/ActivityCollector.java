@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Created by FanJin on 2017/1/20.
+ * Activity's collector for the whole
  */
 
 public class ActivityCollector {

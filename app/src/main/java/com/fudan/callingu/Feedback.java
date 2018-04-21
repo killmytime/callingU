@@ -3,10 +3,13 @@ package com.fudan.callingu;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fudan.helper.BaseActivity;
@@ -25,6 +28,7 @@ public class Feedback extends BaseActivity implements HttpListener {
     private SharedPreferences.Editor editor;
     private String inf;
     private EditText feedback_inf;
+    private TextView enterText;
 
     @Override
     public void onHttpFinish(int state, String responseData){
@@ -62,8 +66,25 @@ public class Feedback extends BaseActivity implements HttpListener {
                 inf = feedback_inf.getText().toString();
                 //URLEncoder.encode(inf,"UTF-8");
                 pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-                String snum=pref.getString("num","");
+                String snum=pref.getString("number","0");
                 HttpConnector.myFeedback(snum, inf, Feedback.this);
+            }
+        });
+        enterText=(TextView)findViewById(R.id.feedback_txt_length);
+        feedback_inf.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                enterText.setText(String.format("已键入%d个字符", feedback_inf.getText().toString().length()));
             }
         });
     }

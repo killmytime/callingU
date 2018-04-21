@@ -1,7 +1,6 @@
 package com.fudan.helper;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by leiwe on 2018/3/30.
@@ -9,54 +8,41 @@ import java.util.regex.Pattern;
  */
 
 public class DataCheck {
+    public static int level;
     /**
-     *
      * @param str check the ratify code
      * @return
      */
-    public static boolean hasOKLength(String str){
-        if (str.length()!=4){
+    public static boolean hasOKLength(String str) {
+        if (str.length() != 4) {
             return false;
         }
         return true;
     }
+
 
     /**
+     * 暂时只支持大陆的号码
      *
-     * @param s checkSpecial symbol
-     * @return
-     */
-    public static boolean hasSpecialCharacter(String s){
-        if (s == null || s.trim().isEmpty()) {
-            return false;
-        }
-        int i;
-        char c;
-        for (i=0;i<4;i++){
-            c=s.charAt(i);
-            if (!( (c>='0')&&(c<='9')|| (c>='A')&&(c<='Z')|| (c>='a')&&(c<='z') ) ){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**可能还是需要改一改，基本前端的check还是可以优化一下的，现在就先不搞了
      * @param s check phone number,for a ratify code,check can be easier
      * @return
      */
-    public static boolean isPhoneNum(String s){
-        // the length should be valid
-        if (s == null || s.trim().isEmpty() || s.length()!=11)
-            return false;
+    public static boolean isPhoneNum(String s) {
+        return s.matches("^1[0-9]{10}$");
+    }
 
-        // s should have no dot (.)
-        Pattern p = Pattern.compile("[^0-9]");
-        Matcher m = p.matcher(s);
-        boolean b = m.find();
-        if (b == true)
-            return false; // Should not have other character than number, so false if there is
-        else
-            return true;
+    public static boolean isBuser(String num){
+     HttpConnector.checkLevel(num, new HttpListener() {
+         @Override
+         public void onHttpFinish(int state, String responseData) throws JSONException {
+             if (state==-1){
+             }
+             else {
+                 JSONObject jsonObject=new JSONObject(responseData);
+                 level=jsonObject.getInt("level");
+             }
+         }
+     });
+     return level==2;
     }
 }

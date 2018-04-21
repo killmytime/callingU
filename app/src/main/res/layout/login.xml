@@ -12,10 +12,18 @@
         android:layout_height="70dp"
         android:background="@color/colorMain"
         android:fitsSystemWindows="true">
+        <Button
+            android:id="@+id/back_login"
+            android:background="@drawable/icon_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="10dp"
+            android:layout_marginBottom="10dp"
+            android:text=""/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="登录"
+            android:text="@string/login_title"
             android:textColor="#ffffff"
             android:textSize="24sp"
             android:gravity="center"/>
@@ -43,28 +51,12 @@
             android:textSize="14sp"
             android:lineSpacingMultiplier="1.2"/>
         <com.github.florent37.materialtextfield.MaterialTextField
-            android:id="@+id/for_login_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:mtf_labelColor="#666"
-            app:mtf_image="@drawable/ic_account_box_black_36dp"
-            android:layout_below="@id/login_title"
-            android:layout_marginTop="50dp">
-            <EditText
-                android:id="@+id/login_name"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:hint="请输入您的姓名"
-                android:textSize="18sp" />
-        </com.github.florent37.materialtextfield.MaterialTextField>
-
-        <com.github.florent37.materialtextfield.MaterialTextField
             android:id="@+id/for_login_num"
+            android:layout_below="@+id/login_title"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             app:mtf_labelColor="#666"
-            app:mtf_image="@drawable/ic_phone_black_48dp"
-            android:layout_below="@id/for_login_name">
+            app:mtf_image="@drawable/ic_phone_black_48dp">
             <EditText
                 android:id="@+id/login_num"
                 android:layout_width="match_parent"
@@ -75,7 +67,7 @@
         </com.github.florent37.materialtextfield.MaterialTextField>
 
         <com.github.florent37.materialtextfield.MaterialTextField
-            android:id="@+id/for_login_pwd"
+            android:id="@+id/for_login_code"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/for_login_num"
@@ -83,7 +75,7 @@
             app:mtf_labelColor="#666"
             app:mtf_image="@drawable/ic_lock_outline_black_36dp">
             <EditText
-                android:id="@+id/login_pwd"
+                android:id="@+id/login_code"
                 android:layout_width="150dp"
                 android:layout_height="40dp"
                 android:hint="请输入验证码"
@@ -99,7 +91,7 @@
             android:textSize="12sp"
             android:textColor="#FFFFFF"
             android:layout_alignParentRight="true"
-            android:layout_alignBottom="@id/for_login_pwd"
+            android:layout_alignBottom="@id/for_login_code"
             android:background="@color/colorMain"/>
 
         <Button
@@ -110,7 +102,7 @@
             android:textSize="18sp"
             android:textColor="#FFFFFF"
             android:layout_marginTop="20dp"
-            android:layout_below="@+id/for_login_pwd"
+            android:layout_below="@+id/for_login_code"
             android:layout_centerHorizontal="true"
             android:background="@color/colorMain"/>
         <TextView

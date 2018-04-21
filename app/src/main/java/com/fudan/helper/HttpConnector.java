@@ -2,17 +2,19 @@ package com.fudan.helper;
 
 import android.os.AsyncTask;
 import android.os.Handler;
+
+import org.json.JSONException;
+
 import okhttp3.FormBody;
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * Created by leiwe on 2018/3/11.
- * Thank you for reading, everythi
- * ng gonna to be better.
+ * Thank you for reading, everything gonna to be better.
  */
 
 public class HttpConnector {
@@ -35,7 +37,7 @@ public class HttpConnector {
         String responseData = "";
 
 
-        public HttpTask(HttpListener listener,Request request,boolean flag){
+        HttpTask(HttpListener listener, Request request, boolean flag){
             this.mListener = listener;
             this.request = request;
             this.flag = flag;
@@ -65,15 +67,27 @@ public class HttpConnector {
 
             }
             if (! done){
-                mListener.onHttpFinish(-1,"");
+                try {
+                    mListener.onHttpFinish(-1,"");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }else {
-                mListener.onHttpFinish(1,responseData);
+                try {
+                    mListener.onHttpFinish(1,responseData);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         protected void onCancelled() {
             super.onCancelled();
-            mListener.onHttpFinish(-1,"");
+            try {
+                mListener.onHttpFinish(-1,"");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -94,48 +108,31 @@ public class HttpConnector {
         },2000);
     }
 
+    /**
+     * get public key from the server
+     * @param listener listener
+     */
     public static void getKey(HttpListener listener){
         Request request = new Request.Builder()
-                .url(formatURL("get-key"))
+                .url(formatURL("api/get-key"))
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
-        executeTask(s);
-    }
-    /** BC
-     * use POST to register
-     * @param number
-     * @param ciphertext
-     * @param listener
-     */
-    public static void register(String number,String ciphertext,HttpListener listener){
-        RequestBody requestBody=new FormBody.Builder()
-                .add("number",number)
-                .add("ciphertext",ciphertext)
-                .build();
-        Request request=new Request.Builder()
-                .url(formatURL("register"))
-                .post(requestBody)
-                .build();
-        final HttpTask s=new HttpTask(listener,request,true);
         executeTask(s);
     }
 
     /** BC
      * use POST to login
-     * 这里timestamp可能有点问题，后期问询一下
-     * @param number
-     * @param timestamp
-     * @param ciphertext
-     * @param listener
+     * @param number myNumber
+     * @param code   identify code
+     * @param listener listener
      */
-    public static void login(String number, String timestamp, String ciphertext, HttpListener listener ){
+    public static void login(String number, String code, HttpListener listener ){
         RequestBody requestBody = new FormBody.Builder()
                 .add("number",number)
-                .add("timestamo",timestamp)
-                .add("ciphertext",ciphertext)
+                .add("code",code)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("login"))
+                .url(formatURL("api/login"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -144,15 +141,15 @@ public class HttpConnector {
 
     /** BC
      * use POST to trigger the verification system.
-     * @param number
-     * @param listener
+     * @param number myNumber
+     * @param listener listener
      */
-    public static void getRatify(String number, HttpListener listener){
+    public static void identifyCode(String number, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
                 .add("number",number)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("ratify"))
+                .url(formatURL("api/identify-code"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -161,9 +158,9 @@ public class HttpConnector {
 
     /** BC
      * use POST to send feedback message.
-     * @param number
-     * @param plaintext
-     * @param listener
+     * @param number myNumber
+     * @param plaintext feedback content
+     * @param listener listener
      */
     public static void myFeedback(String number,String plaintext, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
@@ -171,21 +168,22 @@ public class HttpConnector {
                 .add("plaintext",plaintext)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("feedback"))
+                .url(formatURL("api/feedback"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
         executeTask(s);
     }
 
+    //ToDo something needs to be changed later
     /** BC
      * use GET to check new version.
-     * @param i
-     * @param listener
+     * @param versionNumber versionNumber
+     * @param listener listener
      */
-    public static void checkNew(int i,HttpListener listener){
+    public static void checkNew(int versionNumber,HttpListener listener){
         Request request = new Request.Builder()
-                .url(formatURL("checkNew?version="+i))
+                .url(formatURL("api/check-new?number="+versionNumber))
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
         executeTask(s);
@@ -193,49 +191,36 @@ public class HttpConnector {
 
     /** BC
      * use GET to download the new version.
-     * @param listener
+     * @param listener listener
      */
     public static void downloadNew(HttpListener listener){
         Request request = new Request.Builder()
-                .url(formatURL("downloadNew"))
+                .url(formatURL("api/download-new"))
                 .build();
         final HttpTask s = new HttpTask(listener,request,false);
         executeTask(s);
     }
 
-    /** 这个是有用的em
-     * use GET to download the new version.
-     * @param listener
-     */
-    public static void loadPic(HttpListener listener){
-        Request request = new Request.Builder()
-                .url(formatURL("loadPic"))
-                .build();
-        final HttpTask s = new HttpTask(listener,request,false);
-        executeTask(s);
-    }
 
     /**
      * use POST to send data of location and sos
-     * @param type
-     * @param num
-     * @param target
-     * @param sos
-     * @param lat
-     * @param lng
-     * @param listener
+     * @param num myNumber
+     * @param lat latitude
+     * @param lng longitude
+     * @param sos state of c
+     * @param state state of b&c
+     * @param listener listener
      */
-    public static void sendLocation(int type, String num, String target, int sos, double lat, double lng, HttpListener listener ) {
+    public static void sendLocation( String num, double lat, double lng,int sos,int state, HttpListener listener ) {
         RequestBody requestBody = new FormBody.Builder()
-                .add("type",type+"")
                 .add("number",num)
-                .add("target",target)
-                .add("sos",sos+"")
                 .add("latitude",lat+"")
                 .add("longitude",lng+"")
+                .add("sos",sos+"")
+                .add("state",state+"")
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("UpLocation"))
+                .url(formatURL("api/get-help"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,false);
@@ -243,38 +228,24 @@ public class HttpConnector {
     }
 
     /**
-     * upload my location, and down the information which I need
-     * @param task: value 0 if in service, value 1 if I want to download all the sos,
-     *             value 2 if I want to download detail of one sos.
-     * @param type
-     * @param num
-     * @param target
-     * @param sos
-     * @param lat
-     * @param lng
-     * @param listener
+     * * upload my location, and down the information which I need
+     * @param num myNumber of B
+     * @param lat latitude
+     * @param lng longitude
+     * @param target target number of C
+     * @param state  myState of B
+     * @param listener listener
      */
-    public static void downInformation(int task, int type, String num, String target, int sos, double lat, double lng, HttpListener listener ) {
-        String req;
-        if (task==0){
-            req="BackUp?";
-        }
-        else if(task==1) {
-            req="DownAll?";
-        }
-        else {
-            req="DownOne?";
-        }
+    public static void downInformation(String num, double lat, double lng, String target,int state, HttpListener listener ) {
         RequestBody requestBody = new FormBody.Builder()
-                .add("type",type+"")
                 .add("number",num)
-                .add("target",target)
-                .add("sos",sos+"")
                 .add("latitude",lat+"")
                 .add("longitude",lng+"")
+                .add("target",target)
+                .add("state",state+"")
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL(req))
+                .url(formatURL("api/get-details"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,false);
@@ -283,9 +254,9 @@ public class HttpConnector {
 
     /** C
      * use POST to trigger the verification system.
-     * @param num
-     * @param message
-     * @param listener
+     * @param num  myNumber
+     * @param message additional message
+     * @param listener listener
      */
     public static void setMessage(String num, String message,HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
@@ -293,28 +264,28 @@ public class HttpConnector {
                 .add("message",message)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("setMessage"))
+                .url(formatURL("api/set-message"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
         executeTask(s);
     }
 
-    /**
+    /**B
      *  use POST to send feedback message.
-     * @param num
-     * @param target
-     * @param phoneState
-     * @param listener
+     * @param num myNumber
+     * @param target target number
+     * @param phoneState if has connect with the target
+     * @param listener listener
      */
     public static void reportPhoneState(String num,String target, int phoneState, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
                 .add("number",num)
                 .add("target",target)
-                .add("phoneState",phoneState+"")
+                .add("phonestate",phoneState+"")
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("reportPhoneState"))
+                .url(formatURL("api/report-phone-state"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -323,20 +294,20 @@ public class HttpConnector {
 
     /**BC
      * check the state of user B&C
-     * @param num
-     * @param target
-     * @param myState
-     * @param phoneState
+     * @param num myNumber
+     * @param target target number
+     * @param myState myState
+     * @param phoneState phoneState
      */
     public static void reportMyStateChanged(String num, String target, int myState,int phoneState ,HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
                 .add("number",num)
                 .add("target",target)
-                .add("myState",myState+"")
-                .add("phoneState",phoneState+"")
+                .add("state",myState+"")
+                .add("phonestate",phoneState+"")
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("reportMyStateChanged"))
+                .url(formatURL("api/report-state-changed"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -345,9 +316,9 @@ public class HttpConnector {
 
     /** B
      * report other's bad behavior to the backend
-     * @param num
-     * @param target
-     * @param listener
+     * @param num myNumber
+     * @param target target number
+     * @param listener listener
      */
     public static void reportWrong(String num,String target, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
@@ -355,7 +326,7 @@ public class HttpConnector {
                 .add("target",target)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("reportWrong"))
+                .url(formatURL("api/report-wrong"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -364,12 +335,12 @@ public class HttpConnector {
 
     /** C
      * check whether being warned
-     * @param num
-     * @param listener
+     * @param num myNumber
+     * @param listener listener
      */
     public static void checkWrong(String num,HttpListener listener){
         Request request = new Request.Builder()
-                .url(formatURL("checkWrong?num="+num))
+                .url(formatURL("api/check-wrong?number="+num))
                 .build();
         final HttpTask s = new HttpTask(listener,request,false);
         executeTask(s);
@@ -377,9 +348,9 @@ public class HttpConnector {
 
     /** B
      * report that you have finished the sos help
-     * @param num
-     * @param target
-     * @param listener
+     * @param num myNumber
+     * @param target target number
+     * @param listener listener
      */
     public static void reportFinish(String num,String target, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
@@ -387,7 +358,7 @@ public class HttpConnector {
                 .add("target",target)
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("reportFinish"))
+                .url(formatURL("api/report-finish"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
@@ -395,13 +366,13 @@ public class HttpConnector {
     }
 
     /** B
-     * get the your total score from the backend
-     * @param num
-     * @param listener
+     * get the your  score from the backend
+     * @param num myNumber
+     * @param listener listener
      */
     public static void getScore(String num,HttpListener listener){
         Request request = new Request.Builder()
-                .url(formatURL("getScore?num="+num))
+                .url(formatURL("api/get-score?number="+num))
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
         executeTask(s);
@@ -409,27 +380,44 @@ public class HttpConnector {
 
     /** B
      * add your score
-     * @param num
-     * @param score
-     * @param listener
+     * @param num myNumber
+     * @param score score
+     * @param listener listener
      */
     public static void addScore(String num,int score, HttpListener listener){
         RequestBody requestBody = new FormBody.Builder()
-                .add("num",num)
+                .add("number",num)
                 .add("score",score+"")
                 .build();
         Request request = new Request.Builder()
-                .url(formatURL("addScore"))
+                .url(formatURL("api/add-score"))
                 .post(requestBody)
                 .build();
         final HttpTask s = new HttpTask(listener,request,true);
         executeTask(s);
     }
 
-    static String formatURL(String command){
-        //return "http://118.89.104.204:8888/" + command;
-        //return "http://100.1.19.33:8888/" + command;
-        //return "http://192.168.31.83:8888/" + command;
-        return "http://118.89.111.214:8008/" + command;
+    /**
+     * B&C
+     * check your current user level
+     * @param num myNumber
+     * @param listener listener
+     */
+    public static void checkLevel(String num,HttpListener listener){
+        Request request=new Request.Builder()
+                .url(formatURL("api/check-level?number="+num))
+                .build();
+        final HttpTask s=new HttpTask(listener,request,true);
+        executeTask(s);
+    }
+
+    //ToDo WebSocket connect PushService need to be finished
+    /**
+     * hhe formulation of URL
+     * @param command additional URL element
+     * @return the string of URL
+     */
+    private static String formatURL(String command){
+        return "http://118.89.111.214:2333/" + command;
     }
 }

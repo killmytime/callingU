@@ -71,9 +71,9 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
     private ImageButton phoneSos;
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
-    private String mynum;
+    private String myNumber;
     private int type;
-    private String fornum,forname;
+    private String target,forname;
     private String info;
     private int sos;
 
@@ -175,8 +175,8 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
         type=1;
         Intent intent=getIntent();
         forname=intent.getStringExtra("name");
-        fornum=intent.getStringExtra("fornum");
-        sos=intent.getIntExtra("sos",0);
+        target=intent.getStringExtra("target");
+        sos=intent.getIntExtra("sos",-1);
         tlatitudeSos=intent.getDoubleExtra("latitudeSos",0);
         latitudeSos = tlatitudeSos.doubleValue();
         tlongitudeSos = intent.getDoubleExtra("longitudeSos",0);
@@ -184,9 +184,9 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
 
         Log.e("sos","------"+sos);
         pref= getSharedPreferences("loginStatus",MODE_PRIVATE);
-        mynum=pref.getString("num","0");
+        myNumber=pref.getString("number","0");
 
-        //fornum get from apply.  These three arguments would be changed when click help
+        //target get from apply.  These three arguments would be changed when click help
 
         setContentView(R.layout.show_map_b);
         mapview=(MapView) findViewById(R.id.bmapView);
@@ -213,7 +213,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
             @Override
             public void onClick(View view) {
                 new AlertDialog.Builder(ShowMapB.this)
-                        .setMessage("求救者："+forname+"\n联系方式："+fornum+"\n求救原因："+sos_str[sos]
+                        .setMessage("求救者："+forname+"\n联系方式："+target+"\n求救原因："+sos_str[sos]
                                 +"\n附加信息："+messages+"\n求救状态："+sos_state[sosState])
                         .setPositiveButton("返回",null )
                         .setNegativeButton("虚假求救信息，我要举报",new DialogInterface.OnClickListener() {
@@ -241,7 +241,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
         phoneSos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+fornum));
+                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+target));
                 startActivity(intent);
             }
         });
@@ -281,8 +281,8 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
         //title= (TextView) findViewById(R.id.title_choice);
     }
 
-    private void directCall(String fornum){
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+fornum));
+    private void directCall(String target){
+        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+target));
         startActivity(intent);
     }
 
@@ -402,7 +402,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
             // 定位成功
 
             Log.d(TAG, "onLocationChanged: ---------"+location.getLatitude()+"      "+location.getLongitude() );
-            HttpConnector.downInformation(2,type,mynum,fornum,sos, location.getLatitude(), location.getLongitude(), ShowMapB.this);//must use try and catch
+            HttpConnector.downInformation(myNumber, location.getLatitude(), location.getLongitude(),target,sosState, ShowMapB.this);//must use try and catch
 
             tencentMap.clearAllOverlays();
 
@@ -447,11 +447,11 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
                 JSONObject jsonObject=jsonArray.getJSONObject(i);
                 atype=jsonObject.getInt("type");
                 if (atype==0){
-                    info = "呼救者："+forname+" "+jsonObject.getString("num")+" |详情";
+                    info = "呼救者："+forname+" "+jsonObject.getString("number")+" |详情";
                     //reportBtn.setVisibility(View.VISIBLE);  // visualize the button
                     phoneSos.setVisibility(View.VISIBLE);  // visualize the button
-                    tLatitude = jsonObject.getDouble("lati");
-                    tLongitude = jsonObject.getDouble("longi");
+                    tLatitude = jsonObject.getDouble("latitude");
+                    tLongitude = jsonObject.getDouble("longitude");
                     messages = jsonObject.getString("message");
                     wrongSOS = jsonObject.getInt("wrong");
                     finishSOS= jsonObject.getInt("finish");
@@ -467,11 +467,11 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
                 }
                 else if((atype==2) || (atype==3)){
                     mDoctor = new SaveObject();
-                    mDoctor.address =jsonObject.getString("num");;
+                    mDoctor.address =jsonObject.getString("number");
                     mDoctor.title =jsonObject.getString("name");
                     //mDoctor.title = name_str[i];
-                    mDoctor.latitude = jsonObject.getDouble("lati");
-                    mDoctor.longitude = jsonObject.getDouble("longi");
+                    mDoctor.latitude = jsonObject.getDouble("latitude");
+                    mDoctor.longitude = jsonObject.getDouble("longitude");
                     mDoctorList.add(mDoctor);
                 } else if (atype==-1){
                     info = forname+" "+"已撤销了求救 | 详情";
@@ -554,7 +554,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
             @Override
             public void onClick(View view) {
                 type=2;
-                directCall(fornum);
+                directCall(target);
                 showPhoneStateChoice();
             }
         });
@@ -669,7 +669,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         type = 1;
-                        HttpConnector.reportWrong(mynum, fornum, new HttpListener() {
+                        HttpConnector.reportWrong(myNumber, target, new HttpListener() {
                             @Override
                             public void onHttpFinish(int state, String responseData) {
                                 if (state == -1){
@@ -687,7 +687,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
     }
 
     private void reportPhoneState(int myState){
-        HttpConnector.reportPhoneState(mynum, fornum, myState, new HttpListener() {
+        HttpConnector.reportPhoneState(myNumber, target, myState, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
@@ -701,7 +701,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
 
     private void reportCancel(int phoneState){
         type = 1; // maybe need fix
-        HttpConnector.reportMyStateChanged(mynum, fornum, 1, phoneState, new HttpListener() {
+        HttpConnector.reportMyStateChanged(myNumber, target, 1, phoneState, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
@@ -715,7 +715,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
 
     private void reportGoing(final int phoneState){
         type = 3;
-        HttpConnector.reportMyStateChanged(mynum, fornum, 3, phoneState, new HttpListener() {
+        HttpConnector.reportMyStateChanged(myNumber, target, 3, phoneState, new HttpListener() {
             @Override
             public void onHttpFinish(int state, String responseData) {
                 if (state == -1){
@@ -735,7 +735,7 @@ public class ShowMapB extends BaseActivity implements TencentLocationListener,Ht
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         type = 1;  // maybe need fix
-                        HttpConnector.reportFinish(mynum, fornum, new HttpListener() {
+                        HttpConnector.reportFinish(myNumber, target, new HttpListener() {
                             @Override
                             public void onHttpFinish(int state, String responseData) {
                                 if (state == -1){
